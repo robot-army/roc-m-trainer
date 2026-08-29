@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ROC-M Radio Practice</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">ROC-M training prototype</p>
+          <h1>Radio call practice</h1>
+        </div>
+        <button id="next-scenario" class="secondary-button">New scenario</button>
+      </header>
+
+      <section class="panel scenario-panel">
+        <div class="scenario-label">Current prompt</div>
+        <h2 id="scenario-text">Loading scenario...</h2>
+        <div class="scenario-actions">
+          <button id="play-prompt" class="primary-button">Play prompt aloud</button>
+        </div>
+      </section>
+
+      <section class="panel controls-panel">
+        <div class="controls-row">
+          <button id="start-recognition" class="primary-button">Start speaking</button>
+          <button id="stop-recognition" class="secondary-button">Stop</button>
+        </div>
+
+        <div class="status-row">
+          <span class="status-pill" id="status-indicator">Idle</span>
+        </div>
+      </section>
+
+      <section class="panel transcript-panel">
+        <h3>Live transcript</h3>
+        <div id="transcript" class="transcript-box" aria-live="polite">
+          Your spoken transcript will appear here...
+        </div>
+      </section>
+
+      <section class="panel score-panel">
+        <h3>Checklist</h3>
+        <ul id="score-list" class="score-list"></ul>
+      </section>
+
+      <div id="unsupported" class="unsupported hidden" role="alert">
+        This browser does not support the Web Speech API for speech recognition.
+        Try Chrome or Edge on desktop.
+      </div>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
