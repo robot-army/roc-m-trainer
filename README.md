@@ -2,6 +2,8 @@
 
 This project is a lightweight browser-based training prototype for ROC-M-style radio calls. It uses the browser's built-in Web Speech API for speech recognition and speech synthesis, so it works without paid infrastructure.
 
+> Disclaimer: This project is for educational practice only. It is not an official Transport Canada ROC-M exam, certification, or training provider, and it should not be used as a substitute for the official course or examination process.
+
 ## What it does
 
 - shows a realistic ROC-M scenario prompt

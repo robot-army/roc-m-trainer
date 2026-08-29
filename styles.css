@@ -84,6 +84,16 @@ button:active {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.disclaimer-banner {
+  background: rgba(245, 191, 95, 0.1);
+  border: 1px solid rgba(245, 191, 95, 0.35);
+  color: #fceac3;
+  border-radius: 12px;
+  padding: 12px 14px;
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
 .panel {
   background: rgba(17, 47, 69, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.08);
