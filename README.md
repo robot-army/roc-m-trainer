@@ -16,6 +16,16 @@ This project is a lightweight browser-based training prototype for ROC-M-style r
 
 This works best in Chrome or Edge, where the Web Speech API is broadly supported.
 
+## Supplemental alphabet practice
+
+These are good generic phonetic alphabet tools to use alongside the ROC-M call practice:
+
+- NATO Alphabet Learning: https://www.natoalphabet.com/
+- UniversalAlphabet / NATO translator with audio output: https://universalalphabet.com/
+- ICAO reference: https://www.icao.int/
+
+These are not a replacement for ROC-M radio call practice, but they are useful for memorizing the alphabet and hearing the pronunciation clearly.
+
 ## Run locally
 
 From the project root:

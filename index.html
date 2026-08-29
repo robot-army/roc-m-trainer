@@ -21,35 +21,76 @@
         certification, or course provider.
       </div>
 
-      <section class="panel scenario-panel">
-        <div class="scenario-label">Current prompt</div>
-        <h2 id="scenario-text">Loading scenario...</h2>
-        <div class="scenario-actions">
-          <button id="play-prompt" class="primary-button">Play prompt aloud</button>
-        </div>
-      </section>
+      <div class="mode-tabs" role="tablist">
+        <button id="tab-radio" class="mode-tab active" role="tab" aria-selected="true">Radio call practice</button>
+        <button id="tab-drill" class="mode-tab" role="tab" aria-selected="false">Phonetic alphabet drill (mic)</button>
+      </div>
 
-      <section class="panel controls-panel">
-        <div class="controls-row">
-          <button id="start-recognition" class="primary-button">Start speaking</button>
-          <button id="stop-recognition" class="secondary-button">Stop</button>
-        </div>
+      <div id="mode-radio" class="mode-panel">
+        <section class="panel scenario-panel">
+          <div class="scenario-label">Current prompt</div>
+          <h2 id="scenario-text">Loading scenario...</h2>
+          <div class="scenario-actions">
+            <button id="play-prompt" class="primary-button">Play prompt aloud</button>
+          </div>
+        </section>
 
-        <div class="status-row">
-          <span class="status-pill" id="status-indicator">Idle</span>
-        </div>
-      </section>
+        <section class="panel controls-panel">
+          <div class="controls-row">
+            <button id="start-recognition" class="primary-button">Start speaking</button>
+            <button id="stop-recognition" class="secondary-button">Stop</button>
+          </div>
 
-      <section class="panel transcript-panel">
-        <h3>Live transcript</h3>
-        <div id="transcript" class="transcript-box" aria-live="polite">
-          Your spoken transcript will appear here...
-        </div>
-      </section>
+          <div class="status-row">
+            <span class="status-pill" id="status-indicator">Idle</span>
+          </div>
+        </section>
 
-      <section class="panel score-panel">
-        <h3>Checklist</h3>
-        <ul id="score-list" class="score-list"></ul>
+        <section class="panel transcript-panel">
+          <h3>Live transcript</h3>
+          <div id="transcript" class="transcript-box" aria-live="polite">
+            Your spoken transcript will appear here...
+          </div>
+        </section>
+
+        <section class="panel score-panel">
+          <h3>Checklist</h3>
+          <ul id="score-list" class="score-list"></ul>
+        </section>
+      </div>
+
+      <div id="mode-drill" class="mode-panel hidden">
+        <section class="panel drill-panel">
+          <div class="scenario-label">Say the phonetic word for</div>
+          <h2 id="drill-letter">A</h2>
+
+          <div class="drill-stats">
+            <span class="stat-pill">Score <strong id="drill-score">0</strong></span>
+            <span class="stat-pill">Streak <strong id="drill-streak">0</strong></span>
+            <span class="stat-pill">Accuracy <strong id="drill-accuracy">0%</strong></span>
+          </div>
+
+          <div class="controls-row">
+            <button id="drill-start" class="primary-button">Start drill</button>
+            <button id="drill-stop" class="secondary-button">Stop</button>
+            <button id="drill-skip" class="secondary-button">Skip letter</button>
+          </div>
+
+          <div class="status-row">
+            <span class="status-pill" id="drill-status">Idle</span>
+          </div>
+
+          <div id="drill-heard" class="transcript-box">Heard: —</div>
+        </section>
+      </div>
+
+      <section class="panel resources-panel">
+        <h3>Supplemental alphabet practice</h3>
+        <ul class="resource-list">
+          <li><a href="https://www.natoalphabet.com/" target="_blank" rel="noreferrer">NATO Alphabet Learning</a></li>
+          <li><a href="https://universalalphabet.com/" target="_blank" rel="noreferrer">UniversalAlphabet / NATO translator with audio output</a></li>
+          <li><a href="https://www.icao.int/" target="_blank" rel="noreferrer">ICAO reference</a></li>
+        </ul>
       </section>
 
       <div id="unsupported" class="unsupported hidden" role="alert">

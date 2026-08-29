@@ -94,6 +94,82 @@ button:active {
   font-size: 0.92rem;
 }
 
+.mode-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mode-tab {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mode-tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #062331;
+  border-color: transparent;
+}
+
+.mode-panel {
+  display: grid;
+  gap: 20px;
+}
+
+.drill-panel {
+  min-height: 160px;
+  text-align: center;
+}
+
+#drill-letter {
+  font-size: clamp(3rem, 10vw, 5rem);
+  margin: 10px 0 18px;
+  color: var(--accent);
+}
+
+.drill-stats {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.drill-panel .controls-row {
+  justify-content: center;
+}
+
+.drill-panel .status-row {
+  display: flex;
+  justify-content: center;
+}
+
+.drill-panel .transcript-box {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  padding: 7px 14px;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.stat-pill strong {
+  color: var(--text);
+}
+
 .panel {
   background: rgba(17, 47, 69, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -192,6 +268,23 @@ button:active {
 
 .score-item.missing .value {
   color: var(--danger);
+}
+
+.resource-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 10px;
+}
+
+.resource-list a {
+  color: var(--accent-2);
+  text-decoration: none;
+}
+
+.resource-list a:hover {
+  text-decoration: underline;
 }
 
 .hidden {
