@@ -76,8 +76,25 @@
             <button id="drill-skip" class="secondary-button">Skip letter</button>
           </div>
 
+          <label class="record-toggle">
+            <input type="checkbox" id="drill-record-toggle" />
+            Record session audio (stays on your device only)
+          </label>
+
           <div class="status-row">
             <span class="status-pill" id="drill-status">Idle</span>
+          </div>
+
+          <div id="drill-recording-panel" class="recording-panel hidden">
+            <p class="recording-note">
+              This recording only exists in your browser. Nothing is uploaded automatically.
+              Download it, then attach the file yourself to a GitHub issue if you want to report
+              a misrecognition for debugging.
+            </p>
+            <div class="controls-row">
+              <a id="drill-recording-download" class="secondary-button" download="roc-m-drill-session.webm">Download recording</a>
+              <a id="drill-recording-issue" class="secondary-button" target="_blank" rel="noreferrer">File a debug issue on GitHub</a>
+            </div>
           </div>
 
           <h3>Session history</h3>

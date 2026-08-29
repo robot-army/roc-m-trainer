@@ -16,6 +16,20 @@ This project is a lightweight browser-based training prototype for ROC-M-style r
 
 This works best in Chrome or Edge, where the Web Speech API is broadly supported.
 
+## Debug audio recording (phonetic drill mode)
+
+The phonetic alphabet drill has an optional "Record session audio" checkbox for reporting
+speech-recognition misfires. When enabled:
+
+- audio is recorded locally in your browser only, using `MediaRecorder`; nothing is uploaded automatically
+- when you stop the drill, you get a "Download recording" link and a "File a debug issue on GitHub" link
+- the issue link opens a prefilled GitHub issue; you attach the downloaded audio file yourself through
+  GitHub's own upload UI
+
+This app intentionally has no server-side upload path. A static site can't hold a GitHub write
+token without exposing it to anyone who views the page source, so recordings are never sent
+anywhere automatically.
+
 ## Supplemental alphabet practice
 
 These are good generic phonetic alphabet tools to use alongside the ROC-M call practice:

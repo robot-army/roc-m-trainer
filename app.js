@@ -52,6 +52,10 @@ const drillHeardEl = document.getElementById('drill-heard');
 const drillStartButton = document.getElementById('drill-start');
 const drillStopButton = document.getElementById('drill-stop');
 const drillSkipButton = document.getElementById('drill-skip');
+const drillRecordToggle = document.getElementById('drill-record-toggle');
+const drillRecordingPanel = document.getElementById('drill-recording-panel');
+const drillRecordingDownload = document.getElementById('drill-recording-download');
+const drillRecordingIssue = document.getElementById('drill-recording-issue');
 
 let currentScenario = 0;
 let recognition = null;
@@ -66,8 +70,14 @@ let drillAttempts = 0;
 let drillCorrect = 0;
 let drillLog = [];
 
+let mediaRecorder = null;
+let recordingStream = null;
+let recordedChunks = [];
+let currentRecordingUrl = null;
+
 const DRILL_LOG_LIMIT = 50;
 const DRILL_MATCH_THRESHOLD = 0.5;
+const ISSUE_TRACKER_URL = 'https://github.com/robot-army/roc-m-trainer/issues/new';
 
 function normalize(text) {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -322,7 +332,77 @@ function checkDrillAnswer(spokenText) {
   setTimeout(pickDrillEntry, 700);
 }
 
-function startDrill() {
+function buildDebugIssueUrl() {
+  const title = 'Phonetic drill misrecognition report';
+  const recentLog = drillLog.slice(-20).join('\n') || '(no session log yet)';
+  const body = [
+    'Describe what happened (which letter, what you said, what was heard instead):',
+    '',
+    '---',
+    'Attach the downloaded roc-m-drill-session.webm recording to this issue using the',
+    'file attachment area below before submitting.',
+    '',
+    'Recent session log:',
+    recentLog
+  ].join('\n');
+
+  return `${ISSUE_TRACKER_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+}
+
+async function startAudioRecording() {
+  if (!drillRecordToggle.checked) return;
+
+  drillRecordingPanel.classList.add('hidden');
+
+  if (!window.MediaRecorder || !navigator.mediaDevices) {
+    drillStatusEl.textContent = 'Audio recording not supported in this browser';
+    return;
+  }
+
+  try {
+    recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    drillStatusEl.textContent = 'Microphone permission denied for recording';
+    return;
+  }
+
+  recordedChunks = [];
+  mediaRecorder = new MediaRecorder(recordingStream);
+
+  mediaRecorder.ondataavailable = (event) => {
+    if (event.data && event.data.size > 0) {
+      recordedChunks.push(event.data);
+    }
+  };
+
+  mediaRecorder.onstop = () => {
+    if (recordedChunks.length === 0) return;
+
+    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    if (currentRecordingUrl) {
+      URL.revokeObjectURL(currentRecordingUrl);
+    }
+    currentRecordingUrl = URL.createObjectURL(blob);
+
+    drillRecordingDownload.href = currentRecordingUrl;
+    drillRecordingIssue.href = buildDebugIssueUrl();
+    drillRecordingPanel.classList.remove('hidden');
+  };
+
+  mediaRecorder.start();
+}
+
+function stopAudioRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (recordingStream) {
+    recordingStream.getTracks().forEach((track) => track.stop());
+    recordingStream = null;
+  }
+}
+
+async function startDrill() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
@@ -332,6 +412,8 @@ function startDrill() {
 
   unsupported.classList.add('hidden');
   drillActive = true;
+
+  await startAudioRecording();
 
   if (!drillRecognition) {
     drillRecognition = new SpeechRecognition();
@@ -394,6 +476,7 @@ function stopDrill() {
   if (drillRecognition) {
     drillRecognition.stop();
   }
+  stopAudioRecording();
 }
 
 startButton.addEventListener('click', startRecognition);

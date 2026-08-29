@@ -159,6 +159,42 @@ button:active {
   overflow-y: auto;
 }
 
+.record-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.recording-panel {
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.recording-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.recording-panel .controls-row {
+  justify-content: flex-start;
+}
+
+.recording-panel a.secondary-button {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
 .stat-pill {
   display: inline-flex;
   align-items: center;
