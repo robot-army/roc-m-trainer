@@ -58,14 +58,58 @@ let recognition = null;
 let transcriptResults = [];
 
 let drillRecognition = null;
+let drillActive = false;
 let currentDrillEntry = null;
 let drillScore = 0;
 let drillStreak = 0;
 let drillAttempts = 0;
 let drillCorrect = 0;
+let drillLog = [];
+
+const DRILL_LOG_LIMIT = 50;
+const DRILL_MATCH_THRESHOLD = 0.5;
 
 function normalize(text) {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function levenshteinDistance(a, b) {
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const distances = Array.from({ length: rows }, (_, i) => [i, ...Array(cols - 1).fill(0)]);
+  for (let j = 0; j < cols; j += 1) distances[0][j] = j;
+
+  for (let i = 1; i < rows; i += 1) {
+    for (let j = 1; j < cols; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      distances[i][j] = Math.min(
+        distances[i - 1][j] + 1,
+        distances[i][j - 1] + 1,
+        distances[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return distances[rows - 1][cols - 1];
+}
+
+function wordSimilarity(a, b) {
+  if (!a.length && !b.length) return 1;
+  const distance = levenshteinDistance(a, b);
+  return 1 - distance / Math.max(a.length, b.length);
+}
+
+function isCloseMatch(spokenText, expectedWord) {
+  const normalizedSpoken = normalize(spokenText);
+  const expectedNormalized = normalize(expectedWord);
+
+  if (!normalizedSpoken) return false;
+  if (normalizedSpoken.includes(expectedNormalized)) return true;
+
+  const tokens = normalizedSpoken.split(' ').filter(Boolean);
+  const candidates = tokens.length ? tokens : [normalizedSpoken];
+
+  return candidates.some((token) => wordSimilarity(token, expectedNormalized) >= DRILL_MATCH_THRESHOLD);
 }
 
 function getScenario() {
@@ -239,7 +283,6 @@ function pickDrillEntry() {
   }
   currentDrillEntry = next || phoneticAlphabet[0];
   drillLetterEl.textContent = currentDrillEntry[0];
-  drillHeardEl.textContent = 'Heard: —';
 }
 
 function updateDrillStats() {
@@ -249,12 +292,18 @@ function updateDrillStats() {
   drillAccuracyEl.textContent = accuracy + '%';
 }
 
-function checkDrillAnswer(spokenText) {
-  drillHeardEl.textContent = 'Heard: ' + spokenText;
+function appendDrillLogEntry(entry) {
+  drillLog.push(entry);
+  if (drillLog.length > DRILL_LOG_LIMIT) {
+    drillLog = drillLog.slice(-DRILL_LOG_LIMIT);
+  }
+  drillHeardEl.textContent = drillLog.join('\n');
+  drillHeardEl.scrollTop = drillHeardEl.scrollHeight;
+}
 
-  const normalizedSpoken = normalize(spokenText);
-  const expectedWord = normalize(currentDrillEntry[1]);
-  const isCorrect = normalizedSpoken.includes(expectedWord);
+function checkDrillAnswer(spokenText) {
+  const expectedEntry = currentDrillEntry;
+  const isCorrect = isCloseMatch(spokenText, expectedEntry[1]);
 
   drillAttempts += 1;
   if (isCorrect) {
@@ -266,6 +315,10 @@ function checkDrillAnswer(spokenText) {
   }
 
   updateDrillStats();
+  appendDrillLogEntry(
+    `Expected ${expectedEntry[0]} \u2192 ${expectedEntry[1]}  |  Heard: "${spokenText.trim()}"  |  ${isCorrect ? 'Correct' : 'Incorrect'}`
+  );
+
   setTimeout(pickDrillEntry, 700);
 }
 
@@ -278,6 +331,7 @@ function startDrill() {
   }
 
   unsupported.classList.add('hidden');
+  drillActive = true;
 
   if (!drillRecognition) {
     drillRecognition = new SpeechRecognition();
@@ -300,13 +354,31 @@ function startDrill() {
     };
 
     drillRecognition.onerror = (event) => {
+      // "no-speech" happens constantly on mobile Chrome between phrases; the
+      // upcoming onend handler will restart listening, so don't treat it as fatal.
+      if (event.error === 'no-speech' || event.error === 'aborted') {
+        return;
+      }
+
+      drillActive = false;
       drillStatusEl.textContent = 'Error: ' + event.error;
       drillStatusEl.style.color = '#ffb6b6';
     };
 
     drillRecognition.onend = () => {
-      drillStatusEl.textContent = 'Idle';
-      drillStatusEl.style.color = '#d9e8f8';
+      if (!drillActive) {
+        drillStatusEl.textContent = 'Idle';
+        drillStatusEl.style.color = '#d9e8f8';
+        return;
+      }
+
+      // Mobile Chrome silently stops recognition after every utterance even
+      // with continuous=true, so restart it to keep the drill running.
+      try {
+        drillRecognition.start();
+      } catch (err) {
+        // ignore duplicate-start errors from rapid restarts
+      }
     };
   }
 
@@ -318,6 +390,7 @@ function startDrill() {
 }
 
 function stopDrill() {
+  drillActive = false;
   if (drillRecognition) {
     drillRecognition.stop();
   }

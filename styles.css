@@ -154,6 +154,11 @@ button:active {
   text-align: left;
 }
 
+.drill-log {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
 .stat-pill {
   display: inline-flex;
   align-items: center;
