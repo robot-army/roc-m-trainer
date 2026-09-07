@@ -53,6 +53,7 @@ const drillStartButton = document.getElementById('drill-start');
 const drillStopButton = document.getElementById('drill-stop');
 const drillSkipButton = document.getElementById('drill-skip');
 const drillRecordToggle = document.getElementById('drill-record-toggle');
+const drillRecordStatusEl = document.getElementById('drill-record-status');
 const drillRecordingPanel = document.getElementById('drill-recording-panel');
 const drillRecordingDownload = document.getElementById('drill-recording-download');
 const drillRecordingIssue = document.getElementById('drill-recording-issue');
@@ -74,6 +75,7 @@ let mediaRecorder = null;
 let recordingStream = null;
 let recordedChunks = [];
 let currentRecordingUrl = null;
+let recordingInitiatedForSession = false;
 
 const DRILL_LOG_LIMIT = 50;
 const DRILL_MATCH_THRESHOLD = 0.5;
@@ -349,25 +351,41 @@ function buildDebugIssueUrl() {
   return `${ISSUE_TRACKER_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
 }
 
+function setRecordStatus(text, kind) {
+  drillRecordStatusEl.textContent = text;
+  drillRecordStatusEl.classList.toggle('error', kind === 'error');
+  drillRecordStatusEl.classList.toggle('active', kind === 'active');
+}
+
 async function startAudioRecording() {
   if (!drillRecordToggle.checked) return;
 
   drillRecordingPanel.classList.add('hidden');
 
   if (!window.MediaRecorder || !navigator.mediaDevices) {
-    drillStatusEl.textContent = 'Audio recording not supported in this browser';
+    setRecordStatus('Audio recording not supported in this browser', 'error');
     return;
   }
 
   try {
     recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (err) {
-    drillStatusEl.textContent = 'Microphone permission denied for recording';
+    console.error('Recording getUserMedia failed:', err);
+    setRecordStatus('Recording failed to start: ' + (err.name || err.message || 'unknown error'), 'error');
     return;
   }
 
   recordedChunks = [];
-  mediaRecorder = new MediaRecorder(recordingStream);
+
+  try {
+    mediaRecorder = new MediaRecorder(recordingStream);
+  } catch (err) {
+    console.error('MediaRecorder construction failed:', err);
+    setRecordStatus('Recording failed to start: ' + (err.name || err.message || 'unknown error'), 'error');
+    recordingStream.getTracks().forEach((track) => track.stop());
+    recordingStream = null;
+    return;
+  }
 
   mediaRecorder.ondataavailable = (event) => {
     if (event.data && event.data.size > 0) {
@@ -376,7 +394,10 @@ async function startAudioRecording() {
   };
 
   mediaRecorder.onstop = () => {
-    if (recordedChunks.length === 0) return;
+    if (recordedChunks.length === 0) {
+      setRecordStatus('Recording stopped, but no audio was captured', 'error');
+      return;
+    }
 
     const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
     if (currentRecordingUrl) {
@@ -387,12 +408,15 @@ async function startAudioRecording() {
     drillRecordingDownload.href = currentRecordingUrl;
     drillRecordingIssue.href = buildDebugIssueUrl();
     drillRecordingPanel.classList.remove('hidden');
+    setRecordStatus('Recording saved below', 'active');
   };
 
   mediaRecorder.start();
+  setRecordStatus('Recording...', 'active');
 }
 
 function stopAudioRecording() {
+  recordingInitiatedForSession = false;
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     mediaRecorder.stop();
   }
@@ -412,8 +436,11 @@ async function startDrill() {
 
   unsupported.classList.add('hidden');
   drillActive = true;
+  recordingInitiatedForSession = false;
 
-  await startAudioRecording();
+  if (!drillRecordToggle.checked) {
+    setRecordStatus('', null);
+  }
 
   if (!drillRecognition) {
     drillRecognition = new SpeechRecognition();
@@ -424,6 +451,14 @@ async function startDrill() {
     drillRecognition.onstart = () => {
       drillStatusEl.textContent = 'Listening';
       drillStatusEl.style.color = '#b7ffd9';
+
+      // Only kick off the separate recording stream once speech recognition has
+      // already grabbed the microphone, and only once per session (onstart also
+      // fires on every auto-restart after mobile Chrome's forced stop).
+      if (!recordingInitiatedForSession) {
+        recordingInitiatedForSession = true;
+        startAudioRecording();
+      }
     };
 
     drillRecognition.onresult = (event) => {

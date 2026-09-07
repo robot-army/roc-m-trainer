@@ -169,6 +169,22 @@ button:active {
   font-size: 0.9rem;
 }
 
+.record-status {
+  min-height: 1.2em;
+  margin-top: 6px;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.record-status.error {
+  color: var(--danger);
+}
+
+.record-status.active {
+  color: var(--accent);
+}
+
 .recording-panel {
   margin-top: 16px;
   background: rgba(255, 255, 255, 0.04);
