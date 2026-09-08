@@ -64,6 +64,7 @@ let transcriptResults = [];
 
 let drillRecognition = null;
 let drillActive = false;
+let drillFatalError = false;
 let currentDrillEntry = null;
 let drillScore = 0;
 let drillStreak = 0;
@@ -436,6 +437,7 @@ async function startDrill() {
 
   unsupported.classList.add('hidden');
   drillActive = true;
+  drillFatalError = false;
   recordingInitiatedForSession = false;
 
   if (!drillRecordToggle.checked) {
@@ -477,12 +479,24 @@ async function startDrill() {
         return;
       }
 
+      // A real, fatal error (e.g. 'not-allowed', 'audio-capture', 'network').
+      // The browser always fires onend right after onerror, so remember that
+      // this was a fatal stop or onend will silently overwrite this message
+      // with "Idle" and the drill will look unresponsive with no explanation.
+      drillFatalError = true;
       drillActive = false;
       drillStatusEl.textContent = 'Error: ' + event.error;
       drillStatusEl.style.color = '#ffb6b6';
     };
 
     drillRecognition.onend = () => {
+      if (drillFatalError) {
+        // Leave the error message on screen; don't retry automatically since
+        // errors like 'not-allowed' or 'audio-capture' won't fix themselves.
+        drillFatalError = false;
+        return;
+      }
+
       if (!drillActive) {
         drillStatusEl.textContent = 'Idle';
         drillStatusEl.style.color = '#d9e8f8';
